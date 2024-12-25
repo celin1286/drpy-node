@@ -1,9 +1,9 @@
 name: Sync Upstream Repository
 
-# 定义何时运行工作流，这里设置为每天凌晨2点运行
+# 定义何时运行工作流，这里设置为每天凌晨5点运行
 on:
   schedule:
-    - cron: '0 2 * * *'
+    - cron: '0 5 * * *'
 
 jobs:
   sync:
