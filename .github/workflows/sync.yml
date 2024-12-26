@@ -1,0 +1,30 @@
+name: Sync Fork
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # 每天运行一次
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout target repository
+      uses: actions/checkout@v2
+      with:
+        repository: celin1286/drpy-node
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: Add upstream remote
+      run: git remote add upstream https://github.com/hjdhnx/drpy-node.git
+
+    - name: Fetch upstream
+      run: git fetch upstream
+
+    - name: Merge upstream main
+      run: |
+        git checkout main
+        git merge upstream/main
+        git push origin main
