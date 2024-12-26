@@ -23,7 +23,7 @@ jobs:
         git config --global user.name "celin1286"
 
     - name: Add upstream remote
-      run: git remote add upstream https://github.com/original-owner/original-repo.git
+      run: git remote add upstream https://github.com/hjdhnx/drpy-node.git
 
     - name: Fetch upstream
       run: git fetch upstream
