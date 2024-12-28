@@ -2,7 +2,6 @@ name: Sync Fork
 
 on:
   schedule:
-    - cron: "0 21 * * *" # 每天21点运行一次
     - cron: "0 23 * * *" # 每天23点运行一次
   workflow_dispatch: # 允许手动触发
 
