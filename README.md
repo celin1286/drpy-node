@@ -1,7 +1,7 @@
 # drpyS(drpy-node)
 
 nodejs作为服务端的drpy实现。全面升级异步写法  
-积极开发中，每日一更，当前进度 `20%`
+积极开发中，每日一更，当前进度 `23%`
 
 * [本地配置接口-动态本地](/config)
 * [本地配置接口-动态外网/局域网](/config/1)
@@ -14,13 +14,12 @@ nodejs作为服务端的drpy实现。全面升级异步写法
 
 ## 更新记录
 
-### 20241229
+### 20241230
 
-更新至V1.0.25
+更新至V1.0.26
 
-1. 本地多线程流代理优化
-2. 设置中心功能优化
-3. 推送功能优化
+1. 设置中心优化，样式适配装逼壳。并支持全局站源动作
+2. 新增AI动作交互，用设置中心的连续对话即可测试
 
 [点此查看完整更新记录](docs/updateRecord.md)
 
@@ -47,6 +46,8 @@ todo:
 * [crypto-js-wasm使用教程](docs/crypto-js-wasm/readme-CN.md)
 * [puppeteer使用教程](docs/pupInstall.md)
 * [drpyS源属性说明](docs/ruleAttr.md)
+* [讯飞星火开放平台](https://console.xfyun.cn/services/bm4)
+* [讯飞星火智能体数据集](https://xinghuo.xfyun.cn/botcenter/private-dataset)
 
 ## 问题说明
 

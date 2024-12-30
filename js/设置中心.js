@@ -17,11 +17,15 @@ var rule = {
         let {publicUrl} = this;
         // log('publicUrl:', publicUrl);
         let setIcon = urljoin(publicUrl, './images/icon_cookie/设置.png');
+        let chatIcon = urljoin(publicUrl, './images/icon_cookie/chat.webp');
         action_data.forEach(it => {
             if (!it.vod_pic) {
                 it.vod_pic = setIcon;
             }
-        })
+            if (it.vod_name === '连续对话') {
+                it.vod_pic = chatIcon;
+            }
+        });
         return action_data;
     },
     类型: '设置',
@@ -29,6 +33,44 @@ var rule = {
     hikerListCol: 'icon_round_4',
     // 分类列表样式
     hikerClassListCol: 'avatar',
+    home_flag: '3-0-S',
+    class_flag: '3-11-S',
+    more: {
+        sourceTag: '设置,动作',
+        actions: [
+            {
+                name: '连续对话', action: JSON.stringify({
+                    actionId: '连续对话',
+                    id: 'talk',
+                    type: 'input',
+                    title: '连续对话',
+                    tip: '请输入消息',
+                    value: '',
+                    msg: '开始新的对话',
+                    button: 3,
+                    imageUrl: 'https://img2.baidu.com/it/u=1206278833,3265480730&fm=253&fmt=auto&app=120&f=JPEG?w=800&h=800',
+                    imageHeight: 200,
+                    imageType: 'card_pic_3',
+                    keep: true,
+                })
+            },
+            {name: '查看夸克cookie', action: '查看夸克cookie'},
+            {name: '设置夸克cookie', action: '设置夸克cookie'},
+            {name: '夸克扫码', action: '夸克扫码'},
+            {
+                name: '设置玩偶域名', action: JSON.stringify({
+                    actionId: '玩偶域名',
+                    id: 'domain',
+                    type: 'input',
+                    width: 450,
+                    title: '玩偶域名',
+                    tip: '请输入玩偶域名',
+                    value: '',
+                    msg: '选择或输入使用的域名',
+                    selectData: '1:=https://www.wogg.net/,2:=https://wogg.xxooo.cf/,3:=https://wogg.888484.xyz/,4:=https://www.wogg.bf/,5:=https://woggapi.333232.xyz/'
+                }),
+            }],
+    },
     UCScanCheck: null,
     quarkScanCheck: null,
     aliScanCheck: null,
@@ -37,7 +79,6 @@ var rule = {
     class_name: '推送&夸克&UC&阿里&哔哩&系统配置&测试',
     class_url: 'push&quark&uc&ali&bili&system&test',
     url: '/fyclass',
-
 
     一级: async function (tid, pg, filter, extend) {
         let {input, MY_CATE, MY_PAGE, publicUrl} = this;
@@ -189,6 +230,8 @@ var rule = {
                 d.push(getInput('get_hide_adult', '查看青少年模式', images.settings));
                 d.push(genMultiInput('thread', '设置播放代理线程数', '默认为1，可自行配置成其他值如:10', images.settings));
                 d.push(getInput('get_thread', '查看播放代理线程数', images.settings));
+                d.push(genMultiInput('spark_ai_authKey', '设置讯飞AI鉴权', '在这个页面的http鉴权信息:https://console.xfyun.cn/services/bm4', images.settings));
+                d.push(getInput('get_spark_ai_authKey', '查看讯飞AI鉴权', images.settings));
                 break;
             case 'test':
                 d.push({
@@ -234,7 +277,7 @@ var rule = {
         }
     },
     action: async function (action, value) {
-        let {httpUrl} = this;
+        let {httpUrl, publicUrl} = this;
         if (action === 'set-cookie') {
             return JSON.stringify({
                 action: {
@@ -260,26 +303,61 @@ var rule = {
 
         if (action === '连续对话') {
             let content = JSON.parse(value);
-            try {
-                a = b;
-            } catch (e) {
-                error('测试出错捕获：', e);
+            let prompt = content.talk.trim();
+            if (!prompt) {
+                return JSON.stringify({
+                    action: {
+                        actionId: '__keep__',
+                    },
+                    toast: '输入内容不可以为空哦~'
+                });
+                // return '输入内容不可以为空哦~'
             }
-            error('对象日志测试:', 0, '==== ', content, ' ====', true);
-            if (content.talk.indexOf('http') > -1) {
+            // try {
+            //     a = b;
+            // } catch (e) {
+            //     console.error('测试出错捕获：', e);
+            // }
+            // console.error('对象日志测试:', 0, '==== ', content, ' ====', true);
+
+            if (prompt.startsWith('http')) {
                 return JSON.stringify({
                     action: {
                         actionId: '__detail__',
                         skey: 'push_agent',
-                        ids: content.talk,
+                        ids: prompt,
                     },
                     toast: '你要去看视频了'
                 });
             }
+            let replyContent = prompt;
+            if (ENV.get('spark_ai_authKey')) {
+                if (rule.askLock) {
+                    return JSON.stringify({
+                        action: {
+                            actionId: '__keep__',
+                            msg: '请等待AI思考完成...',
+                            reset: false
+                        },
+                        toast: 'AI思考中，请稍候继续提问'
+                    });
+                }
+                const sparkAI = new SparkAI({
+                    authKey: ENV.get('spark_ai_authKey'),
+                    baseURL: 'https://spark-api-open.xf-yun.com',
+                });
+                rule.askLock = 1;
+                try {
+                    replyContent = await sparkAI.ask(prompt, {temperature: 1.0});
+                } catch (error) {
+                    replyContent = error.message;
+                }
+                rule.askLock = 0;
+            }
             return JSON.stringify({
                 action: {
                     actionId: '__keep__',
-                    msg: '回音：' + content.talk,
+                    msg: '你:' + prompt + '\n' + 'AI:' + replyContent,
                     reset: true
                 },
                 toast: '你有新的消息'
@@ -715,6 +793,7 @@ var rule = {
             'bili_cookie',
             'hide_adult',
             'thread',
+            'spark_ai_authKey',
         ];
         let get_cookie_sets = [
             'get_quark_cookie',
@@ -723,6 +802,7 @@ var rule = {
             'get_bili_cookie',
             'get_hide_adult',
             'get_thread',
+            'get_spark_ai_authKey',
         ];
         if (cookie_sets.includes(action) && value) {
             try {
@@ -770,6 +850,12 @@ var rule = {
                 return '发生错误：' + e.message;
             }
         }
+        if (action === '查看夸克cookie') {
+            return {action: getInput('get_quark_cookie', '查看夸克 cookie', urljoin(publicUrl, './images/icon_cookie/夸克.webp')).vod_id};
+        }
+        if (action === '设置夸克cookie') {
+            return {action: genMultiInput('quark_cookie', '设置夸克 cookie', null).vod_id};
+        }
 
         return '动作：' + action + '\n数据：' + value;
     },
@@ -816,7 +902,8 @@ function getInput(actionId, title, img) {
             tip: '请输入.env中配置的入库授权码',
             value: '',
             msg: '查看已设置的cookie需要授权码',
-            imageUrl: 'https://pic.imgdb.cn/item/667ce9f4d9c307b7e9f9d052.webp',
+            // imageUrl: img || 'https://pic.imgdb.cn/item/667ce9f4d9c307b7e9f9d052.webp',
+            imageUrl: img || 'https://pic.qisuidc.cn/s/2024/10/23/6718c212f1fdd.webp',
             imageHeight: 200,
             imageType: 'card_pic_3',
         }),

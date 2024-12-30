@@ -13,6 +13,7 @@ import {ENV} from '../utils/env.js';
 import {Quark} from "../utils/quark.js";
 import {UC} from "../utils/uc.js";
 import {Ali} from "../utils/ali.js";
+import SparkAI from '../utils/SparkAI.js';
 // const { req } = await import('../utils/req.js');
 import {gbkTool} from '../libs_drpy/gbk.js'
 // import {atob, btoa, base64Encode, base64Decode, md5} from "../libs_drpy/crypto-util.js";
@@ -47,6 +48,7 @@ globalThis.Ali = Ali;
 globalThis.require = createRequire(import.meta.url);
 globalThis._fetch = fetch;
 globalThis.XMLHttpRequest = XMLHttpRequest;
+globalThis.SparkAI = SparkAI;
 globalThis.pathLib = {
     basename: path.basename,
     extname: path.extname,
@@ -89,6 +91,7 @@ if (typeof fetchByHiker === 'undefined') { // 判断是海阔直接放弃导入p
     }
 }
 globalThis.pupWebview = pupWebview;
+
 try {
     if (typeof fetchByHiker !== 'undefined' && typeof globalThis.import === 'function') {
         await globalThis.import('../libs_drpy/crypto-js-wasm.js'); // 海阔放在globalThis里去动态引入
@@ -108,6 +111,19 @@ try {
         ...CryptoJS
     };
 }
+
+let simplecc = null;
+try {
+    // 尝试动态导入模块puppeteerHelper
+    const simWasm = await import('simplecc-wasm');  // 使用动态 import
+    simplecc = simWasm.simplecc;
+    console.log('simplecc imported successfully');
+} catch (error) {
+    // console.log('Failed to import puppeteerHelper:', error);
+    console.log(`Failed to import simplecc:${error.message}`);
+}
+globalThis.simplecc = simplecc;
+
 
 export async function getSandbox(env = {}) {
     const {getProxyUrl} = env;
@@ -148,6 +164,8 @@ export async function getSandbox(env = {}) {
         req,
         _fetch,
         XMLHttpRequest,
+        simplecc,
+        SparkAI,
         batchFetch,
         JSProxyStream,
         JSFile,
@@ -531,6 +549,8 @@ async function invokeWithInjectVars(rule, method, injectVars, args) {
 async function invokeMethod(filePath, env, method, args = [], injectVars = {}) {
     const moduleObject = await init(filePath, env); // 确保模块已初始化
     switch (method) {
+        case 'get_rule':
+            return moduleObject;
         case 'class_parse':
             injectVars = await homeParse(moduleObject, ...args);
             if (!injectVars) {
@@ -752,7 +772,8 @@ async function homeParse(rule) {
         for (let i = 0; i < cnt; i++) {
             classes.push({
                 'type_id': urls[i],
-                'type_name': names[i]
+                'type_name': names[i],
+                'type_flag': rule['class_flag'],
             });
         }
     }
@@ -764,6 +785,7 @@ async function homeParse(rule) {
         classes: classes,
         filters: rule.filter,
         cate_exclude: rule.cate_exclude,
+        home_flag: rule.home_flag,
         fetch_params: deepCopy(rule.rule_fetch_params),
         jsp: jsp,
         pdfh: jsp.pdfh.bind(jsp),
@@ -787,7 +809,8 @@ async function homeParseAfter(d, _type, hikerListCol, hikerClassListCol, injectV
     const {
         classes,
         filters,
-        cate_exclude
+        cate_exclude,
+        home_flag,
     } = injectVars;
     if (!Array.isArray(d.class)) {
         d.class = classes;
@@ -797,6 +820,9 @@ async function homeParseAfter(d, _type, hikerListCol, hikerClassListCol, injectV
     }
     if (!d.list) {
         d.list = [];
+    }
+    if (!d.type_flag && home_flag) {
+        d.type_flag = home_flag;
     }
     d.class = d.class.filter(it => !cate_exclude || !(new RegExp(cate_exclude).test(it.type_name)));
     return d
@@ -1143,6 +1169,10 @@ export async function action(filePath, env, action, value) {
     } catch (e) {
         return '动作规则错误:' + e.message
     }
+}
+
+export async function getRule(filePath, env) {
+    return await invokeMethod(filePath, env, 'get_rule', [], {});
 }
 
 export async function jx(filePath, env, params) {
