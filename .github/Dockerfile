@@ -1,42 +1,23 @@
-# 构建器阶段
-FROM node:14-alpine AS builder
+# 使用Node.js官方镜像作为基础镜像
+FROM node:14
 
-# 安装git和其他依赖
-RUN apk add --no-cache git
-
-# 创建一个工作目录
+# 设置工作目录
 WORKDIR /app
 
-# 克隆GitHub仓库到工作目录
-RUN git clone https://github.com/hjdhnx/drpy-node.git .
+# 复制package.json和package-lock.json文件
+COPY package*.json ./
 
-# 更新npm
-RUN npm install -g npm
+# 安装项目依赖
+RUN npm install
 
-# 全局安装yarn和pm2工具
-RUN npm install -g yarn
-RUN yarn global add pm2
+# 复制项目文件
+COPY . .
 
-# 安装项目依赖项和puppeteer
-RUN yarn && yarn add puppeteer
+# 构建项目
+RUN npm run build
 
-# 复制工作目录中的所有文件到一个临时目录中
-RUN mkdir /tmp/drpys && cp -r /app/* /tmp/drpys/
+# 暴露应用运行的端口
+EXPOSE 3000
 
-# 运行器阶段
-FROM alpine:latest AS runner
-
-# 安装Node.js运行时
-RUN apk add --no-cache nodejs
-
-# 创建一个工作目录
-WORKDIR /app
-
-# 复制构建器阶段中准备好的文件和依赖项到运行器阶段的工作目录中
-COPY --from=builder /tmp/drpys /app
-
-# 暴露应用程序端口
-EXPOSE 5757
-
-# 启动应用程序
-CMD ["node", "index.js"]
+# 启动应用
+CMD ["npm", "start"]
