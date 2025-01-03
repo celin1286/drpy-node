@@ -15,7 +15,7 @@ WORKDIR /app
 RUN git clone https://github.com/hjdhnx/drpy-node.git .
 
 # 设置npm镜像为npmmirror
-RUN npm config set registry https://registry.npmmirror.com
+# RUN npm config set registry https://registry.npmmirror.com
 
 # 全局安装yarn和pm2工具
 RUN npm install -g yarn pm2
