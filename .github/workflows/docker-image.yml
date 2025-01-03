@@ -22,7 +22,7 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Set up npm registry mirror
+    - name: Set npm registry mirror
       run: npm config set registry https://registry.npmmirror.com
 
     - name: Build and push Docker image
@@ -32,6 +32,8 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: celin1286/drpy-node:latest
+        build-args:
+          - NPM_CONFIG_LOGLEVEL=verbose
 
     - name: Install dependencies with --unsafe-perm
       run: |
