@@ -1,5 +1,5 @@
 {
-  "sites_count": 45,
+  "sites_count": 50,
   "sites": [
     {
       "key": "drpyS_设置中心",
@@ -107,6 +107,36 @@
       "ext": ""
     },
     {
+      "key": "drpyS_采王成人[密]",
+      "name": "采王成人[密](DS)",
+      "type": 4,
+      "api": "http://localhost:5757/api/采集之王[合]",
+      "searchable": 1,
+      "filterable": 1,
+      "quickSearch": 0,
+      "ext": "H4sIAAAAAAAAA9PT088qzs/Tf9ne/nJ2W/TT9W2xL+fOfNbQqAcSVjFUAQAd5YgpIQAAAA=="
+    },
+    {
+      "key": "drpyS_采王道长[合]",
+      "name": "采王道长[合](DS)",
+      "type": 4,
+      "api": "http://localhost:5757/api/采集之王[合]",
+      "searchable": 1,
+      "filterable": 1,
+      "quickSearch": 0,
+      "ext": "H4sIAAAAAAAAA9PT088qzs/Tf9ne/nJ228u5M581NOqBRFQMAcGPDNobAAAA"
+    },
+    {
+      "key": "drpyS_采王zy[密]",
+      "name": "采王zy[密](DS)",
+      "type": 4,
+      "api": "http://localhost:5757/api/采集之王[合]",
+      "searchable": 1,
+      "filterable": 1,
+      "quickSearch": 0,
+      "ext": "H4sIAAAAAAAAA9PT088qzs/Tf9ne/nJ2W3RVZezLuTOfNTTqgURVDAGu/MCKHwAAAA=="
+    },
+    {
       "key": "drpyS_动漫巴士[漫]",
       "name": "动漫巴士[漫](DS)",
       "type": 4,
@@ -197,6 +227,16 @@
       "ext": ""
     },
     {
+      "key": "drpyS_集百动漫",
+      "name": "集百动漫(DS)",
+      "type": 4,
+      "api": "http://localhost:5757/api/集百动漫",
+      "searchable": 1,
+      "filterable": 0,
+      "quickSearch": 0,
+      "ext": ""
+    },
+    {
       "key": "drpyS_荐片",
       "name": "荐片(DS)",
       "type": 4,
@@ -242,6 +282,16 @@
       "type": 4,
       "api": "http://localhost:5757/api/老白故事[听]",
       "searchable": 2,
+      "filterable": 1,
+      "quickSearch": 0,
+      "ext": ""
+    },
+    {
+      "key": "drpyS_七度空间[密]",
+      "name": "七度空间[密](DS)",
+      "type": 4,
+      "api": "http://localhost:5757/api/七度空间[密]",
+      "searchable": 1,
       "filterable": 1,
       "quickSearch": 0,
       "ext": ""
