@@ -47,7 +47,7 @@ var rule = {
     searchable: 2,
     quickSearch: 0,
     // params: '?render=1&type=url&params=../json/哔哩教育.json@哔哩教育[官]',
-    // params: '?render=1&type=url&params=../json/哔哩大全.json@哔哩大全[官]',
+     params: '?render=1&type=url&params=../json/哔哩大全.json@哔哩大全[官]',
     headers: {
         "User-Agent": "PC_UA",
         "Referer": "https://www.bilibili.com",
