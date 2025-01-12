@@ -94,7 +94,7 @@ var rule = {
             'act': php_html.match(/ var act = "(.*)"/)[1],
             'play': php_html.match(/ var play = "(.*)"/)[1]
         }
-        let js_html = JSON.parse((await req('https://hhjx.hhplayer.com/api.php', {
+        let js_html = JSON.parse((await req('https://hhjx.hhplayer.com/index.php', {
             method: 'POST',
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
