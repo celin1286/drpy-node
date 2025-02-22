@@ -102,22 +102,22 @@ var rule = {
         return vod
     },
     搜索: async function (wd, quick, pg) {
-        let {input} = this
-        let html = (await getHtml(input)).data
-        const $ = pq(html)
-        let videos = []
-        $('.module-items .module-search-item').each((index, item) => {
-            const a = $(item).find('a:first')[0];
-            const img = $(item).find('img:first')[0];
-            const content = $(item).find('.video-text:first').text();
+        let url = this.host + '/search?keyword=' + wd + '&page=' + pg;
+        let html = await req_(url, 'get', {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
+        });
+        const $ = pq(html);
+        let videos = [];
+        $('.topicList .topicItem').each((index, item) => {
+            const a = $(item).find('h2 a:first')[0];
             videos.push({
-                "vod_name": a.attribs.title,
+                "vod_name": a.children[0].data,
                 "vod_id": a.attribs.href,
-                "vod_remarks": content,
-                "vod_pic": img.attribs['data-src']
-            })
-        })
-        return videos
+                "vod_pic": '',
+                "vod_remarks": ''
+            });
+        });
+        return videos;
     },
     lazy: async function (flag, id, flags) {
         let {getProxyUrl, input} = this;
