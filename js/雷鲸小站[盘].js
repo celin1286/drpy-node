@@ -7,7 +7,7 @@ var rule = {
     host: 'https://www.leijing1.xyz',
     url: '/?tagId=fyclass&page=fypage',
     detailUrl: '/fyid',
-    searchUrl: '/search/keyword/**?page=fypage',  // 修改搜索URL格式
+    searchUrl: '/?q=**&page=fypage', // 修改为模糊查询格式
     play_parse: true,
     class_parse: async () => {
         let classes = [{
@@ -105,57 +105,42 @@ var rule = {
         let {input} = this;
         let d = [];
         try {
-            // 添加调试日志
+            console.log('搜索关键词:', wd);
             console.log('搜索URL:', input);
             
-            let html = await req_(input, 'get', {
+            // 获取所有文章列表
+            let html = await req_(this.host, 'get', {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
             });
             
-            // 添加调试日志
-            console.log('搜索返回HTML:', html.substring(0, 200));
-            
             const $ = pq(html);
             
-            // 检查页面结构
-            let items = $('.topicList .topicItem');
-            console.log('找到搜索结果数量:', items.length);
-            
-            items.each((index, item) => {
+            // 在所有文章中进行模糊匹配
+            $('.topicList .topicItem').each((index, item) => {
                 const a = $(item).find('h2 a:first')[0];
+                const content = $(item).find('.topicContent').text().trim();
+                
+                // 标题和内容都进行模糊匹配
                 if (a && a.children && a.children[0]) {
-                    d.push({
-                        vod_name: a.children[0].data,
-                        vod_id: a.attribs.href,
-                        vod_remarks: '',
-                        vod_pic: '',
-                        vod_content: $(item).find('.topicContent').text().trim()
-                    });
+                    const title = a.children[0].data;
+                    if (title.toLowerCase().includes(wd.toLowerCase()) || 
+                        content.toLowerCase().includes(wd.toLowerCase())) {
+                        d.push({
+                            vod_name: title,
+                            vod_id: a.attribs.href,
+                            vod_remarks: '',
+                            vod_pic: '',
+                            vod_content: content
+                        });
+                    }
                 }
             });
             
-            // 如果没有找到结果，尝试其他选择器
-            if (d.length === 0) {
-                $('.search-results .item').each((index, item) => {
-                    const title = $(item).find('.title').text().trim();
-                    const url = $(item).find('a').attr('href');
-                    if (title && url) {
-                        d.push({
-                            vod_name: title,
-                            vod_id: url,
-                            vod_remarks: '',
-                            vod_pic: '',
-                            vod_content: $(item).find('.content').text().trim()
-                        });
-                    }
-                });
-            }
+            console.log(`模糊查询"${wd}"找到${d.length}个结果`);
         } catch (e) {
             console.log('搜索发生错误:', e.message);
         }
         
-        // 打印最终结果
-        console.log('搜索结果数量:', d.length);
         return d;
     },
     lazy: async function (flag, id, flags) {
