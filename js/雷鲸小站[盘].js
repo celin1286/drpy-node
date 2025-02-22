@@ -7,7 +7,7 @@ var rule = {
     host: 'https://www.leijing1.xyz',
     url: '/?tagId=fyclass&page=fypage',
     detailUrl: '/fyid',
-    searchUrl: '/search/keyword/**',  // 移除 page=fypage 因为实际搜索URL中并没有分页参数
+    searchUrl: '/search/keyword/**?page=fypage',  // 修改搜索URL格式
     play_parse: true,
     class_parse: async () => {
         let classes = [{
@@ -104,28 +104,59 @@ var rule = {
     搜索: async function (wd, quick, pg) {
         let {input} = this;
         let d = [];
-        let html = await req_(input, 'get', {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
-        });
-        
-        const $ = pq(html);
-        $('.topicList .topicItem').each((index, item) => {
-            const a = $(item).find('h2 a:first')[0];
-            const title = a.children[0].data;
-            const url = a.attribs.href;
-            // 从文章内容中提取描述
-            const content = $(item).find('.topicContent').text().trim();
+        try {
+            // 添加调试日志
+            console.log('搜索URL:', input);
             
-            d.push({
-                title: title,
-                url: url,
-                desc: '', // 可以添加发布时间或其他信息
-                content: content,
-                pic_url: '' // 如果有图片可以在这里添加
+            let html = await req_(input, 'get', {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
             });
-        });
+            
+            // 添加调试日志
+            console.log('搜索返回HTML:', html.substring(0, 200));
+            
+            const $ = pq(html);
+            
+            // 检查页面结构
+            let items = $('.topicList .topicItem');
+            console.log('找到搜索结果数量:', items.length);
+            
+            items.each((index, item) => {
+                const a = $(item).find('h2 a:first')[0];
+                if (a && a.children && a.children[0]) {
+                    d.push({
+                        vod_name: a.children[0].data,
+                        vod_id: a.attribs.href,
+                        vod_remarks: '',
+                        vod_pic: '',
+                        vod_content: $(item).find('.topicContent').text().trim()
+                    });
+                }
+            });
+            
+            // 如果没有找到结果，尝试其他选择器
+            if (d.length === 0) {
+                $('.search-results .item').each((index, item) => {
+                    const title = $(item).find('.title').text().trim();
+                    const url = $(item).find('a').attr('href');
+                    if (title && url) {
+                        d.push({
+                            vod_name: title,
+                            vod_id: url,
+                            vod_remarks: '',
+                            vod_pic: '',
+                            vod_content: $(item).find('.content').text().trim()
+                        });
+                    }
+                });
+            }
+        } catch (e) {
+            console.log('搜索发生错误:', e.message);
+        }
         
-        return setResult(d);
+        // 打印最终结果
+        console.log('搜索结果数量:', d.length);
+        return d;
     },
     lazy: async function (flag, id, flags) {
         let {getProxyUrl, input} = this;
