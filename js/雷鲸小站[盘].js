@@ -102,21 +102,35 @@ var rule = {
         return vod
     },
     搜索: async function (wd, quick, pg) {
-        let url = this.host + '/search?keyword=' + wd + '&page=' + pg;
-        let html = await req_(url, 'get', {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
-        });
-        const $ = pq(html);
+        let {input} = this;
         let videos = [];
-        $('.topicList .topicItem').each((index, item) => {
-            const a = $(item).find('h2 a:first')[0];
-            videos.push({
-                "vod_name": a.children[0].data,
-                "vod_id": a.attribs.href,
-                "vod_pic": '',
-                "vod_remarks": ''
-            });
-        });
+        try {
+            let html = await req_(input, 'post', {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
+            }, input.split('?')[1]);
+            
+            // 如果返回的是加密数据，需要先解密
+            if (typeof html === 'string' && html.startsWith('{')) {
+                let jsonData = JSON.parse(html);
+                if (jsonData.data) {
+                    // 假设有解密函数 Decrypt
+                    let decryptedData = Decrypt(jsonData.data);
+                    let searchData = JSON.parse(decryptedData);
+                    if (searchData.search_list) {
+                        searchData.search_list.forEach(it => {
+                            videos.push({
+                                "vod_name": it.vod_name,
+                                "vod_id": it.vod_id,
+                                "vod_pic": it.vod_pic,
+                                "vod_remarks": it.vod_remarks
+                            });
+                        });
+                    }
+                }
+            }
+        } catch (e) {
+            log('搜索发生错误:', e.message);
+        }
         return videos;
     },
     lazy: async function (flag, id, flags) {
