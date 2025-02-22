@@ -4,10 +4,10 @@ const {
 } = misc;
 var rule = {
     title: '雷鲸小站[盘]',
-    host: 'https://www.leijing1.xyz',
+    host: 'https://www.leijing.xyz',
     url: '/?tagId=fyclass&page=fypage',
     detailUrl: '/fyid',
-    searchUrl: '/?q=**&page=fypage', // 修改为模糊查询格式
+    searchUrl: '/search?keyword=**&page=fypage',
     play_parse: true,
     class_parse: async () => {
         let classes = [{
@@ -102,46 +102,22 @@ var rule = {
         return vod
     },
     搜索: async function (wd, quick, pg) {
-        let {input} = this;
-        let d = [];
-        try {
-            console.log('搜索关键词:', wd);
-            console.log('搜索URL:', input);
-            
-            // 获取所有文章列表
-            let html = await req_(this.host, 'get', {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
-            });
-            
-            const $ = pq(html);
-            
-            // 在所有文章中进行模糊匹配
-            $('.topicList .topicItem').each((index, item) => {
-                const a = $(item).find('h2 a:first')[0];
-                const content = $(item).find('.topicContent').text().trim();
-                
-                // 标题和内容都进行模糊匹配
-                if (a && a.children && a.children[0]) {
-                    const title = a.children[0].data;
-                    if (title.toLowerCase().includes(wd.toLowerCase()) || 
-                        content.toLowerCase().includes(wd.toLowerCase())) {
-                        d.push({
-                            vod_name: title,
-                            vod_id: a.attribs.href,
-                            vod_remarks: '',
-                            vod_pic: '',
-                            vod_content: content
-                        });
-                    }
-                }
-            });
-            
-            console.log(`模糊查询"${wd}"找到${d.length}个结果`);
-        } catch (e) {
-            console.log('搜索发生错误:', e.message);
-        }
-        
-        return d;
+        let {input} = this
+        let html = (await getHtml(input)).data
+        const $ = pq(html)
+        let videos = []
+        $('.module-items .module-search-item').each((index, item) => {
+            const a = $(item).find('a:first')[0];
+            const img = $(item).find('img:first')[0];
+            const content = $(item).find('.video-text:first').text();
+            videos.push({
+                "vod_name": a.attribs.title,
+                "vod_id": a.attribs.href,
+                "vod_remarks": content,
+                "vod_pic": img.attribs['data-src']
+            })
+        })
+        return videos
     },
     lazy: async function (flag, id, flags) {
         let {getProxyUrl, input} = this;
