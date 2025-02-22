@@ -104,33 +104,27 @@ var rule = {
     搜索: async function (wd, quick, pg) {
         let {input} = this;
         let d = [];
-        try {
-            let html = await req_(input, 'post', {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
-            }, input.split('?')[1]);
+        let html = await req_(input, 'get', {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
+        });
+        
+        const $ = pq(html);
+        $('.topicList .topicItem').each((index, item) => {
+            const a = $(item).find('h2 a:first')[0];
+            const title = a.children[0].data;
+            const url = a.attribs.href;
+            // 从文章内容中提取描述
+            const content = $(item).find('.topicContent').text().trim();
             
-            if (typeof html === 'string' && html.startsWith('{')) {
-                let jsonData = JSON.parse(html);
-                if (jsonData.data) {
-                    let decryptedData = Decrypt(jsonData.data);
-                    let searchData = JSON.parse(decryptedData);
-                    if (searchData.search_list) {
-                        searchData.search_list.forEach(it => {
-                            d.push({
-                                title: it.vod_name,
-                                url: it.vod_id,
-                                desc: it.vod_remarks,
-                                content: it.vod_blurb,
-                                pic_url: it.vod_pic,
-                            });
-                        });
-                    }
-                }
-            }
-        } catch (e) {
-            log('搜索发生错误:', e.message);
-        }
-        // 使用 setResult 格式化结果
+            d.push({
+                title: title,
+                url: url,
+                desc: '', // 可以添加发布时间或其他信息
+                content: content,
+                pic_url: '' // 如果有图片可以在这里添加
+            });
+        });
+        
         return setResult(d);
     },
     lazy: async function (flag, id, flags) {
