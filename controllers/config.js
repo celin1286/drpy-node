@@ -64,7 +64,7 @@ async function generateSiteJSON(options, requestHost, sub, pwd) {
                     api += `?pwd=${pwd}`;
                 }
                 let ruleObject = {
-                    searchable: 0, // 固定值
+                    searchable: 1, // 固定值
                     filterable: 0, // 固定值
                     quickSearch: 0, // 固定值
                 };
