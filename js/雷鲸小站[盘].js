@@ -103,26 +103,25 @@ var rule = {
     },
     搜索: async function (wd, quick, pg) {
         let {input} = this;
-        let videos = [];
+        let d = [];
         try {
             let html = await req_(input, 'post', {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
             }, input.split('?')[1]);
             
-            // 如果返回的是加密数据，需要先解密
             if (typeof html === 'string' && html.startsWith('{')) {
                 let jsonData = JSON.parse(html);
                 if (jsonData.data) {
-                    // 假设有解密函数 Decrypt
                     let decryptedData = Decrypt(jsonData.data);
                     let searchData = JSON.parse(decryptedData);
                     if (searchData.search_list) {
                         searchData.search_list.forEach(it => {
-                            videos.push({
-                                "vod_name": it.vod_name,
-                                "vod_id": it.vod_id,
-                                "vod_pic": it.vod_pic,
-                                "vod_remarks": it.vod_remarks
+                            d.push({
+                                title: it.vod_name,
+                                url: it.vod_id,
+                                desc: it.vod_remarks,
+                                content: it.vod_blurb,
+                                pic_url: it.vod_pic,
                             });
                         });
                     }
@@ -131,7 +130,8 @@ var rule = {
         } catch (e) {
             log('搜索发生错误:', e.message);
         }
-        return videos;
+        // 使用 setResult 格式化结果
+        return setResult(d);
     },
     lazy: async function (flag, id, flags) {
         let {getProxyUrl, input} = this;
