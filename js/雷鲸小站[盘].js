@@ -7,7 +7,7 @@ var rule = {
     host: 'https://www.leijing1.xyz',
     url: '/?tagId=fyclass&page=fypage',
     detailUrl: '/fyid',
-    searchUrl: '/search?keyword=**&page=fypage',
+    searchUrl: '/search/keyword/**',  // 移除 page=fypage 因为实际搜索URL中并没有分页参数
     play_parse: true,
     class_parse: async () => {
         let classes = [{
